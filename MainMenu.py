@@ -1,5 +1,4 @@
 from __future__ import print_function
-from builtins import input
 def editPicture():
     '''Runs a menu for you to choose which functions you want to run
     takes no parameters. The program will ask you for needed parameters
@@ -7,6 +6,19 @@ def editPicture():
     #initializes menuOption to 0: a value that shouldn't ever be used except for
     #here.
     menuOption = 0
-    print('Enter 1 for Adding a Border\n\nEnter 2 for Adding Family Watermark\n\n'
-    + 'Enter 3 for Adding both a Border and the Watermark\n\nEnter 4 to quit.')
-    menuOption = raw_input("Choice: ")
+    while menuOption is not 4:
+        #Gives the user a chance to input and tells them what each input will do.
+        try:
+            print('\nEnter 1 for Adding a Border\n\n'
+            + 'Enter 2 for Adding Family Watermark\n\n'
+            + 'Enter 3 for Adding both a Border and the Watermark\n\nEnter 4 to quit.')
+            menuOption = int(raw_input("Choice: "))
+            print(menuOption)
+
+            #Now that the user has chosen which input, test if it is in range.
+            if menuOption < 1 or menuOption > 4:
+                print('You must enter a number between 1 and 4. Try again.')
+            
+        #If the user didn't enter a number, which will cause the program to be annoyed...
+        except ValueError:
+            print('You must enter a number. Try again.')
