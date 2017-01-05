@@ -15,14 +15,18 @@ img = plt.imread(filename)
 
 height = len(img)
 width = len(img[0])
-
-for row in range (height):
-    for column in range (width):
-        x = img[row][column][0]
-        y = img[row][column][1]
-        z = img[row][column][2]
-        img[row][column] = [x,y,z,128]
+#Check for proper extension
+if filename.endswith('.gif'):
+    for row in range (height):
+        for column in range (width):
+            x = img[row][column][0]
+            y = img[row][column][1]
+            z = img[row][column][2]
+            img[row][column] = [x,y,z,128]
 '''Show the image data'''
+#Give a warning if the wrong file extension is used
+else:
+    print "You did not use a .gif file, the opacity will not be changed!"
 
 # Create figure with 1 subplot
 fig, ax = plt.subplots(1, 1)
