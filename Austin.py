@@ -30,19 +30,19 @@ def get_images(directory=None):
          image = PIL.Image.open(absolute_filename)
          file_list += [entry]
          image_list += [image]
-         filename = os.path.join(directory, absolute_filename)
+         filename = os.path.join(directory, absolute_filename) #Use previous information to get file path
          img = plt.imread(filename)
          height = len(img)
-         width = len(img[0])
+         width = len(img[0]) #Allows the program to modify any file size
          for row in range (height):
                 for column in range (width):
                     x = img[row][column][0]
                     y = img[row][column][1]
                     z = img[row][column][2]
-                    img[row][column] = [x,y,z,128]
+                    img[row][column] = [x,y,z,128] #Changes the alpha value of the image, nothing else
       
     except IOError: 
-        pass
+        pass #Error Catcher
     else:
         print "Wrong file extension used, the image opacity won't be changed!"
     #Give a warning if the wrong file extension is used
