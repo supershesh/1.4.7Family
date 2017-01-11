@@ -1,8 +1,9 @@
 from __future__ import print_function
 import PIL
+from PIL import ImageDraw
 import os.path
-import numpy as np 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+
 
 def editPicture():
     '''Runs a menu for you to choose which functions you want to run
@@ -10,40 +11,45 @@ def editPicture():
     when you choose an option.'''
     #initializes menuOption to 0: a value that shouldn't ever be used except for
     #here
-    
+
     menuOption = 0
-    while menuOption is not 5:
+    directoryValid = False
+    
+
+    directoryChoice = raw_input("Please enter the name of the folder you want to change: ")
+    directory = os.path.join(os.getcwd(), directoryChoice)
+    
+    while menuOption is not 4:
         
         #Gives the user a chance to input and tells them what each input will do.
         try:
             print('\nEnter 1 for Adding a Frame\n\n'
             + 'Enter 2 for Adding Family Watermark\n\n'
-            + 'Enter 3 for Adding Border\n\n'
-            + 'Enter 4 for Adding both a Border and the Watermark\n\nEnter 5 to quit.')
+            + 'Enter 3 for Adding both a Border and the Watermark\n\nEnter 4 to quit.')
+            print(os.getcwd())
             menuOption = int(raw_input("Choice: "))
             print(menuOption)
 
             #Now that the user has chosen which input, test if it is in range.
-            if menuOption < 1 or menuOption > 5:
-                print('You must enter a number between 1 and 5. Try again.')
+            if menuOption < 1 or menuOption > 4:
+                print('You must enter a number between 1 and 4. Try again.')
                 
             elif menuOption == 1:
                 print('something1')
                 #Insert border function here
-                frame_images()
+                frame_images(directory)
                 
             elif menuOption == 2:
                 print('something2')
                 #Insert watermark function here
-                
+                watermark(False, directory)
+            
             elif menuOption == 3:
                 print('something3')
-                #Insert Border function here
-            
-            elif menuOption == 4:
-                print('something4')
                 #Insert code to run both programs
-            
+                frame_images(directory)
+                watermark(True, directory)
+                
         #If the user didn't enter a number, which will cause the program to be annoyed...
         except ValueError:
             print('You must enter a number. Try again.')
@@ -61,7 +67,7 @@ def frame_images(directory=None):
      directory = os.getcwd() # Use working directory if unspecified
 
  # Create a new directory 'modified'
- new_directory = os.path.join(directory, 'modified')
+ new_directory = os.path.join(os.getcwd(), 'modified')
  try:
      os.mkdir(new_directory)
  except OSError:
@@ -80,8 +86,46 @@ def frame_images(directory=None):
      # Save the altered image, using PNG to retain transparency
      new_image_filename = os.path.join(new_directory,filename + '.png')
      new_image.save(new_image_filename)
+     
+     
+def round_corners(original_image, percent_of_side):
+    """ Rounds the corner of a PIL.Image
+    
+    original_image must be a PIL.Image
+    Returns a new PIL.Image with rounded corners, where
+    0 < percent_of_side < 1
+    is the corner radius as a portion of the shorter dimension of original_image
+    """
+    #set the radius of the rounded corners
+    width, height = original_image.size
+    radius = int(percent_of_side * min(width, height)) # radius in pixels
+    
+    ###
+    #create a mask
+    ###
+    
+    #start with transparent mask
+    rounded_mask = PIL.Image.new('RGBA', (width, height), (127,0,127,0))
+    drawing_layer = ImageDraw.Draw(rounded_mask)
+    
+    # Overwrite the RGBA values with A=255.
+    # The 127 for RGB values was used merely for visualizing the mask
+    
+    # Draw one rectangles to fill interior with opaqueness
+    drawing_layer.polygon([(radius-75,25),(width-radius+75,25),
+                            (width-radius+75,height-25),(radius-75,height-25)],
+                            fill=(127,0,127,255))
 
-
+                         
+    # Uncomment the following line to show the mask
+    # plt.imshow(rounded_mask)
+    
+    # Make the new image, starting with all transparent
+    result = PIL.Image.new('RGBA', original_image.size, (0,0,0,0))
+    result.paste(original_image, (0,0), mask=rounded_mask)
+    return result
+    
+    
 def get_images(directory=None):
  ''' Returns PIL.Image objects for all the images in directory.
 
@@ -109,51 +153,26 @@ def get_images(directory=None):
  return image_list, file_list
  
  
-def round_corners(original_image, percent_of_side):
-    """ Rounds the corner of a PIL.Image
-    
-    original_image must be a PIL.Image
-    Returns a new PIL.Image with rounded corners, where
-    0 < percent_of_side < 1
-    is the corner radius as a portion of the shorter dimension of original_image
-    """
-    #set the radius of the rounded corners
-    width, height = original_image.size
-    radius = int(percent_of_side * min(width, height)) # radius in pixels
-    
-    ###
-    #create a mask
-    ###
-    
-    #start with transparent mask
-    rounded_mask = PIL.Image.new('RGBA', (width, height), (127,0,127,0))
-    drawing_layer = PIL.ImageDraw.Draw(rounded_mask)
-    
-    # Overwrite the RGBA values with A=255.
-    # The 127 for RGB values was used merely for visualizing the mask
-    
-    # Draw two rectangles to fill interior with opaqueness
-    drawing_layer.polygon([(radius,0),(width-radius,0),
-                            (width-radius,height),(radius,height)],
-                            fill=(127,0,127,255))
-    drawing_layer.polygon([(0,radius),(width,radius),
-                            (width,height-radius),(0,height-radius)],
-                            fill=(127,0,127,255))
-
-    #Draw four filled circles of opaqueness
-    drawing_layer.ellipse((0,0, 2*radius, 2*radius), 
-                            fill=(0,127,127,255)) #top left
-    drawing_layer.ellipse((width-2*radius, 0, width,2*radius), 
-                            fill=(0,127,127,255)) #top right
-    drawing_layer.ellipse((0,height-2*radius,  2*radius,height), 
-                            fill=(0,127,127,255)) #bottom left
-    drawing_layer.ellipse((width-2*radius, height-2*radius, width, height), 
-                            fill=(0,127,127,255)) #bottom right
-                         
-    # Uncomment the following line to show the mask
-    # plt.imshow(rounded_mask)
-    
-    # Make the new image, starting with all transparent
-    result = PIL.Image.new('RGBA', original_image.size, (0,0,0,0))
-    result.paste(original_image, (0,0), mask=rounded_mask)
-    return result
+def watermark(allFunctions = False, directory = None):
+    '''Inserts a watermark into the image.
+    Takes an boolean argument of if you are going through all the functions'''
+    if allFunctions == True:
+        directory = os.path.join(os.getcwd(), 'modified')
+        
+    try:
+     os.mkdir(os.path.join(os.getcwd(), 'modified'))
+    except OSError:
+     pass # if the directory already exists, proceed 
+     
+    print(directory)
+    watermark = PIL.Image.open(os.path.join(os.getcwd(), 'NuamesLogo.png'))
+    image_list, file_list = get_images(directory) 
+    for n in range(len(image_list)):
+     # Parse the filename
+        modifiedImage = image_list[n]
+        try:
+            modifiedImage.paste(watermark, (0, 0), mask=watermark)
+            modifiedImage_filename = os.path.join(directory,file_list[n])
+            modifiedImage.save(modifiedImage_filename)
+        except KeyError:
+            pass
