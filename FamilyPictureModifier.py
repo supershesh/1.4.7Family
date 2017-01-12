@@ -2,7 +2,6 @@ from __future__ import print_function
 import PIL
 from PIL import ImageDraw
 import os.path
-import matplotlib.pyplot as plt
 
 
 def editPicture():
@@ -13,7 +12,6 @@ def editPicture():
     #here
 
     menuOption = 0
-    directoryValid = False
     
 
     directoryChoice = raw_input("Please enter the name of the folder you want to change: ")
@@ -22,38 +20,41 @@ def editPicture():
     while menuOption is not 4:
         
         #Gives the user a chance to input and tells them what each input will do.
-        try:
-            print('\nEnter 1 for Adding a Frame\n\n'
-            + 'Enter 2 for Adding Family Watermark\n\n'
-            + 'Enter 3 for Adding both a Border and the Watermark\n\nEnter 4 to quit.')
-            print(os.getcwd())
-            menuOption = int(raw_input("Choice: "))
-            print(menuOption)
-
-            #Now that the user has chosen which input, test if it is in range.
-            if menuOption < 1 or menuOption > 4:
-                print('You must enter a number between 1 and 4. Try again.')
-                
-            elif menuOption == 1:
-                print('something1')
-                #Insert border function here
-                frame_images(directory)
-                
-            elif menuOption == 2:
-                print('something2')
-                #Insert watermark function here
-                watermark(False, directory)
+        
+        print('\nEnter 1 for Adding a Frame\n\n'
+        + 'Enter 2 for Adding Family Watermark\n\n'
+        + 'Enter 3 for Adding both a Border and the Watermark\n\nEnter 4 to quit.')
+        print(os.getcwd())
             
-            elif menuOption == 3:
-                print('something3')
-                #Insert code to run both programs
-                frame_images(directory)
-                watermark(True, directory)
+        try:
+            menuOption = int(raw_input("Choice: "))
+        except ValueError:
+            print(menuOption)
+            print('You must enter a number. Try again.')
+                
+        print(menuOption)
+
+        #Now that the user has chosen which input, test if it is in range.
+        if menuOption < 1 or menuOption > 4:
+            print('You must enter a number between 1 and 4. Try again.')
+                
+        elif menuOption == 1:
+            print('something1')
+            #Insert border function here
+            frame_images(directory)
+                
+        elif menuOption == 2:
+            print('something2')
+            #Insert watermark function here
+            watermark(False, directory)
+            
+        elif menuOption == 3:
+            print('something3')
+            #Insert code to run both programs
+            frame_images(directory)
+            watermark(True, directory)
                 
         #If the user didn't enter a number, which will cause the program to be annoyed...
-        except ValueError:
-            print('You must enter a number. Try again.')
-            
 
 def frame_images(directory=None):
  ''' Saves a modified version of each image in directory.
@@ -121,7 +122,7 @@ def round_corners(original_image, percent_of_side):
     # plt.imshow(rounded_mask)
     
     # Make the new image, starting with all transparent
-    result = PIL.Image.new('RGBA', original_image.size, (0,0,0,0))
+    result = PIL.Image.new('RGBA', original_image.size, (255,255,255,255))
     result.paste(original_image, (0,0), mask=rounded_mask)
     return result
     
@@ -156,23 +157,32 @@ def get_images(directory=None):
 def watermark(allFunctions = False, directory = None):
     '''Inserts a watermark into the image.
     Takes an boolean argument of if you are going through all the functions'''
-    if allFunctions == True:
-        directory = os.path.join(os.getcwd(), 'modified')
-        
-    try:
-     os.mkdir(os.path.join(os.getcwd(), 'modified'))
-    except OSError:
-     pass # if the directory already exists, proceed 
-     
-    print(directory)
+    print (directory)
     watermark = PIL.Image.open(os.path.join(os.getcwd(), 'NuamesLogo.png'))
+    directory = os.path.join(os.getcwd(), 'modified')
+    try:
+        os.mkdir(os.path.join(os.getcwd(), 'modified'))
+    except OSError:
+        pass # if the directory already exists, proceed 
+            
+    print(directory)
     image_list, file_list = get_images(directory) 
     for n in range(len(image_list)):
-     # Parse the filename
+    # Parse the filename
         modifiedImage = image_list[n]
+        
+        filename, filetype = os.path.splitext(file_list[n])
+        
+        width, height = modifiedImage.size
+        
+        #Resize the watermark to a fourth of the image size
+        watermark_small = watermark.resize((width/4, height/4))
+        
         try:
-            modifiedImage.paste(watermark, (0, 0), mask=watermark)
-            modifiedImage_filename = os.path.join(directory,file_list[n])
+            modifiedImage.paste(watermark_small, (20,20), mask=watermark_small)
+            
+            modifiedImage_filename = os.path.join(directory,filename + '.png')
+            
             modifiedImage.save(modifiedImage_filename)
         except KeyError:
             pass
